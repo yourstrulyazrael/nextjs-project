@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { categories } from "@/components/home/data";
+import { categories } from "@/lib/spaces";
 import { useHomeFilters } from "@/components/home/home-filters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

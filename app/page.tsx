@@ -14,6 +14,7 @@ import { HomeFiltersProvider } from "@/components/home/home-filters";
 import { ReservationForm } from "@/components/home/reservation-form";
 import { SpacesExplorer } from "@/components/home/spaces-explorer";
 import { UpcomingReservations } from "@/components/home/upcoming-reservations";
+import { ReservationList } from "@/components/reservations/reservation-list";
 import { SessionProvider, type SessionUser } from "@/components/session-provider";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Badge } from "@/components/ui/badge";
@@ -164,7 +165,9 @@ export default function HomePage() {
                 </Button>
               </div>
               <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-muted" />}>
-                <UpcomingReservations />
+                <UpcomingReservations>
+                  <ReservationList />
+                </UpcomingReservations>
               </Suspense>
             </section>
           </main>

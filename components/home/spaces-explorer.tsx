@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
 import { ArrowRight, MapPin, Star, Users } from "lucide-react";
-import { categories, spaces } from "@/components/home/data";
 import { defaultFilters, useHomeFilters } from "@/components/home/home-filters";
-import { useUser } from "@/components/session-provider";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,21 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-function ReserveButton() {
-  const user = useUser();
-  const href = user
-    ? "/account#reservations"
-    : `/auth/login?next=${encodeURIComponent("/account")}`;
-
-  return (
-    <Button asChild size="sm">
-      <Link href={href}>
-        Reserve <ArrowRight />
-      </Link>
-    </Button>
-  );
-}
+import { cn } from "@/lib/utils";
+import { categories, formatPrice, formatTime, reserveHref, spaces } from "@/lib/spaces";
 
 export function SpacesExplorer() {
   const { filters, setFilters } = useHomeFilters();
@@ -47,6 +31,14 @@ export function SpacesExplorer() {
         day: "numeric",
       })}`
     : "Available today";
+
+  // Carry the search form's details over to the reservation form.
+  const prefill = {
+    date: filters.date,
+    time: filters.time,
+    duration: filters.duration > 1 ? filters.duration : undefined,
+    guests: filters.guests > 1 ? filters.guests : undefined,
+  };
 
   return (
     <>
@@ -84,7 +76,12 @@ export function SpacesExplorer() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((s) => (
-            <Card key={s.name} className="flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
+            // The title link stretches over the whole card (after:inset-0), so clicking
+            // anywhere opens the details; slot chips and Reserve sit above it (z-10).
+            <Card
+              key={s.slug}
+              className="relative flex flex-col overflow-hidden transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-lg"
+            >
               <div className={`relative h-40 bg-gradient-to-br ${s.gradient}`}>
                 <Badge className="absolute left-3 top-3 bg-background/90 text-foreground hover:bg-background">
                   {s.category}
@@ -92,7 +89,14 @@ export function SpacesExplorer() {
               </div>
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-lg">{s.name}</CardTitle>
+                  <CardTitle className="text-lg">
+                    <Link
+                      href={`/spaces/${s.slug}`}
+                      className="outline-none after:absolute after:inset-0 after:content-['']"
+                    >
+                      {s.name}
+                    </Link>
+                  </CardTitle>
                   <span className="flex items-center gap-1 text-sm font-medium">
                     <Star className="size-4 fill-amber-400 text-amber-400" /> {s.rating}
                   </span>
@@ -108,17 +112,23 @@ export function SpacesExplorer() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {s.slots.map((slot) => (
-                    <Badge key={slot} variant="outline" className="font-normal">
-                      {slot}
-                    </Badge>
+                    <Link
+                      key={slot}
+                      href={reserveHref(s.slug, { ...prefill, time: slot })}
+                      className={cn(badgeVariants({ variant: "outline" }), "relative z-10 font-normal hover:bg-accent")}
+                    >
+                      {formatTime(slot)}
+                    </Link>
                   ))}
                 </div>
               </CardContent>
               <CardFooter className="flex items-center justify-between">
-                <span className="font-semibold">{s.price}</span>
-                <Suspense fallback={<Button size="sm" disabled>Reserve <ArrowRight /></Button>}>
-                  <ReserveButton />
-                </Suspense>
+                <span className="font-semibold">{formatPrice(s.pricePerHour)} / hr</span>
+                <Button asChild size="sm" className="relative z-10">
+                  <Link href={reserveHref(s.slug, prefill)}>
+                    Reserve <ArrowRight />
+                  </Link>
+                </Button>
               </CardFooter>
             </Card>
           ))}

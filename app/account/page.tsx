@@ -2,11 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { ArrowLeft, CalendarCheck, KeyRound } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { ProfileForm } from "@/components/account/profile-form";
 import { SignOutButton } from "@/components/account/sign-out-button";
-import { ReservationList } from "@/components/home/upcoming-reservations";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { ReservationList } from "@/components/reservations/reservation-list";
+import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -60,7 +60,7 @@ async function AccountContent() {
             <Link href="/#spaces">Book a space</Link>
           </Button>
         </div>
-        <ReservationList />
+        <ReservationList allowCancel />
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -104,22 +104,7 @@ async function AccountContent() {
 export default function AccountPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur">
-        <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <CalendarCheck className="size-5" />
-            <span>ReserveIt</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <ThemeSwitcher />
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <ArrowLeft /> Home
-              </Link>
-            </Button>
-          </div>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10">
         {/* Reading the session is request-specific, so it streams in behind this boundary. */}
