@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CalendarCheck, CheckCircle2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createReservation } from "@/app/spaces/[slug]/reserve/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,22 +59,16 @@ export function ReservationRequestForm({
     if (guests > space.capacity) return setError(`${space.name} fits up to ${space.capacity} guests.`);
 
     setIsSubmitting(true);
-    const { error } = await createClient().from("reservations").insert({
-      space_slug: space.slug,
-      space_name: space.name,
-      date,
-      start_time: time,
-      duration_hours: duration,
-      guests,
-      contact_name: name.trim(),
-      contact_phone: phone.trim(),
-      purpose: purpose.trim() || null,
-      total_price: total,
-    });
-    setIsSubmitting(false);
-
-    if (error) return setError(error.message);
-    setSubmitted(true);
+    try {
+      const result = await createReservation({ slug: space.slug, date, time, duration, guests, name, phone, purpose });
+      if (!result.ok) return setError(result.error);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
